@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../classes/autoload.php";
+require_once __DIR__ . "/../core/bootstrap.php";
 
 echo "Generating Database \n";
 
@@ -38,7 +38,7 @@ $fill($root["children"],$numOfLevels);
 
 print("Done\n");
 $json = json_encode($root,JSON_PRETTY_PRINT);
-file_put_contents(__DIR__."/../data/db.json",$json);
-file_put_contents(__DIR__."/../data/db_original.json",$json);
+file_put_contents(PATH_ORIGINAL_DB,$json);
+file_put_contents(PATH_DB,$json);
 
 print("Number of elements: $nextId \n");
