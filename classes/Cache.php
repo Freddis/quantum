@@ -195,7 +195,7 @@ class Cache
     {
         $result = [];
         foreach ($this->tree as $node) {
-            if ($node["parentId"] === $id) {
+            if ($node["parentId"] == $id) {
                 $result[] = $node;
             }
         }
