@@ -1,0 +1,77 @@
+body {
+  background-color: lightgrey;
+}
+body #app {
+  width: 1024px;
+  margin: 30px auto;
+  background-color: white;
+  border: 1px solid silver;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+body .tree {
+  display: inline-block;
+  width: 320px;
+  text-align: left;
+  margin: 0px 10px;
+  vertical-align: top;
+}
+body .tree .root {
+  border-bottom: 1px solid silver;
+}
+body .tree .root:last-child {
+  border-bottom: 0px solid white;
+}
+body .tree .title {
+  margin-bottom: 5px;
+}
+body .tree .list {
+  border: 1px solid grey;
+  padding: 7px;
+}
+body .tree .list .node {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 2px 3px;
+  overflow: auto;
+  margin-bottom: 2px;
+}
+body .tree .list .node.deleted {
+  background-color: #d48787;
+}
+body .tree .list .node.deleted:hover {
+  background-color: #d48787;
+}
+body .tree .list .node .title {
+  display: inline-block;
+  line-height: 21px;
+  margin: 0px;
+}
+body .tree .list .node .controls {
+  display: inline-block;
+  float: right;
+}
+body .tree .list .node .controls button {
+  cursor: pointer;
+  margin-left: 5px;
+}
+body .tree .list .node:hover {
+  background-color: aliceblue;
+  border-radius: 3px;
+  padding: 2px 3px;
+}
+body .tree .list .node.selected {
+  background-color: cornflowerblue;
+  color: white;
+}
+body .tree .list .children {
+  margin-left: 15px;
+}
+body .tree .buttons {
+  margin-top: 10px;
+}
+body .tree .buttons button {
+  margin-right: 10px;
+}
+/*# sourceMappingURL=app.css.map */

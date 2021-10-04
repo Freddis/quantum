@@ -1,0 +1,85 @@
+body {
+  background-color: lightgrey;
+
+  #app {
+    width: 1024px;
+    margin: 30px auto;
+    background-color: white;
+    border: 1px solid silver;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+  }
+
+  .tree {
+    display: inline-block;
+    width: 320px;
+    text-align: left;
+    margin: 0px 10px;
+    vertical-align: top;
+
+    .root  {
+      border-bottom: 1px solid silver;
+      &:last-child {
+        border-bottom: 0px solid white;
+      }
+    }
+    .title {
+      margin-bottom: 5px;
+    }
+
+    .list {
+      border: 1px solid grey;
+      padding: 7px;
+
+      .node {
+        cursor: pointer;
+        border-radius: 3px;
+        padding: 2px 3px;
+        overflow: auto;
+        margin-bottom: 2px;
+        &.deleted {
+          background-color: #d48787;
+          &:hover{
+            background-color: #d48787;
+          }
+        }
+
+        .title {
+          display: inline-block;
+          line-height: 21px;
+          margin: 0px;
+        }
+        .controls {
+          display: inline-block;
+          float: right;
+          button {
+            cursor: pointer;
+            margin-left: 5px;
+          }
+        }
+
+        &:hover {
+          background-color: aliceblue;
+          border-radius: 3px;
+          padding: 2px 3px;
+        }
+        &.selected {
+          background-color: cornflowerblue;
+
+          color: white;
+        }
+      }
+
+      .children {
+        margin-left: 15px;
+      }
+    }
+    .buttons {
+      margin-top: 10px;
+      button {
+        margin-right: 10px;
+      }
+    }
+  }
+}
