@@ -144,12 +144,16 @@ class Cache
             $this->moveChildren($node, $children);
         }
 
-        $parent = &$this->searchCachedNode($node["parentId"],$this->tree);
-        if ($parent) {
-            $parent["children"][] = $node;
-        } else {
-            $this->tree[] = $node;
+        $this->tree[] = $node;
+
+        if($node["parentId"])
+        {
+            $parent = &$this->searchCachedNode($node["parentId"],$this->tree);
+            if ($parent) {
+                $this->moveChildren($parent,[$node]);
+            }
         }
+
         return $this->saveCache();
     }
 
@@ -237,7 +241,19 @@ class Cache
      */
     private function moveChildren(array &$parent, array $children)
     {
-        $parent["children"] = $children;
+
+        if(isset($parent["deleted"]))
+        {
+            foreach ($children as &$child)
+            {
+                $this->deleteRecursively($child);
+            }
+        }
+
+        foreach($children as $child)
+        {
+            $parent["children"][] = $child;
+        }
         $childrenIds = [];
         array_map(function ($el) use (&$childrenIds) {
             $childrenIds[] = $el["id"];
