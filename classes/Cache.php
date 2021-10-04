@@ -87,7 +87,7 @@ class Cache
     {
         $updated = $this->database->update($this->tree);
         if ($updated) {
-//            $this->clear();
+            $this->clear();
             return true;
         }
         return false;
