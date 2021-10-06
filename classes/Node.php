@@ -8,7 +8,7 @@ class Node
     /**
      * Идентификатор
      */
-    protected string $id;
+    protected $id;
 
     /**
      * Родитель
@@ -18,7 +18,7 @@ class Node
     /**
      * Значение
      */
-    protected string $value;
+    protected $value;
 
     /**
      * Удалена ли нода

@@ -6,7 +6,7 @@
 class CacheNode extends Node
 {
 
-    protected ?string $intendedParentId = null;
+    protected $intendedParentId = null;
 
     /**
      * @param string $parentId
