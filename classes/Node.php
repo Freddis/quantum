@@ -28,7 +28,7 @@ class Node
     /**
      * @var Node[] Ноды
      */
-    protected array $children = [];
+    protected $children = [];
 
     /**
      * @param string $id Идентификатор

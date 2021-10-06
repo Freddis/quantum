@@ -7,13 +7,15 @@ class Cache
 {
     /**
      * Дерево кеша
+     * @var CacheNode
      */
-    protected CacheNode $tree;
+    protected  $tree;
 
     /**
      * Подключение к безе данных
+     * @var Database
      */
-    protected Database $database;
+    protected $database;
 
     /**
      * Путь к базе данных

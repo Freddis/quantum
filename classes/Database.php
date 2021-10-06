@@ -12,8 +12,9 @@ class Database
 
     /**
      * Дерево данных
+     * @var Node
      */
-    protected Node $tree;
+    protected $tree;
 
     /**
      * Database constructor.
