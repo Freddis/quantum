@@ -166,7 +166,7 @@ class Cache
      * @param string $id Идентификатор ноды
      * @return CacheNode|null
      */
-    public function getCachedNode(string $id) : ?CacheNode
+    public function getCachedNode(string $id)
     {
         return $this->tree->searchNode($id);
     }
@@ -200,7 +200,7 @@ class Cache
      *
      * @return string
      */
-    private function generateNodeId() : string
+    private function generateNodeId()
     {
         return uniqid();
     }

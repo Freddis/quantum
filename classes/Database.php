@@ -50,7 +50,7 @@ class Database
      * @param string $id Идентификатор ноды
      * @return array|null Нода
      */
-    public function getNode($id) : array
+    public function getNode($id)
     {
         $node = $this->tree->searchNode($id);
         if ($node) {

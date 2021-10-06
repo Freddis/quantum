@@ -11,7 +11,7 @@ class CacheNode extends Node
     /**
      * @param string $parentId
      */
-    public function setIntendedParentId(?string $parentId)
+    public function setIntendedParentId($parentId)
     {
         $this->intendedParentId = $parentId;
     }
@@ -19,7 +19,7 @@ class CacheNode extends Node
     /**
      * @return mixed
      */
-    public function getIntendedParentId() : ?string
+    public function getIntendedParentId()
     {
         return $this->intendedParentId;
     }
