@@ -60,7 +60,7 @@ class Node
     {
         $this->children[] = $node;
         $node->setParent($this);
-        if($this->deleted)
+        if($this->isDeleted())
         {
             $node->delete();
         }

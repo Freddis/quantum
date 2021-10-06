@@ -70,32 +70,50 @@ class Database
      */
     public function update(array $nodes)
     {
-        $fakeRoot = new Node(uniqid(), "root");
-        foreach ($nodes as $node) {
-            $fakeRoot->addChild($node);
-        }
 
         $db = $this->tree;
-        $traversalInterrupted = $fakeRoot->traverseChildren(function (Node $child) use ($db) {
-            $existingNode = $db->searchNode($child->getId());
-            if ($existingNode) {
-                $existingNode->setValue($child->getValue());
-                return false;
-            }
+        $traverseInterrupted = false;
+        foreach ($nodes as $node) {
 
-            $node = new Node($child->getId(), $child->getValue(), $child->isDeleted());
-            $parent = $child->getParent();
-            $existingParent = $db->searchNode($parent->getId());
-            if ($parent->getId() === $existingParent->getId()) {
-                $existingParent->addChild($node);
-                return false;
-            } else {
-                return true;
-            }
+            $traverseInterrupted |= $node->traverse(function (Node $child) use ($db) {
+                $existingNode = $db->searchNode($child->getId());
+                //update
+                if ($existingNode) {
+                    $existingNode->setValue($child->getValue());
+                    if ($child->isDeleted()) {
+                        $existingNode->delete();
+                    }
 
-        });
+                    return false;
+                }
+                //create
+                $node = new Node($child->getId(), $child->getValue(), $child->isDeleted());
+                $parent = $child->getParent();
+                $existingParent = $db->searchNode($parent->getId());
+                if ($parent->getId() === $existingParent->getId()) {
+                    $existingParent->addChild($node);
 
-        if ($traversalInterrupted) {
+                    return false;
+                } else {
+                    return true;
+                }
+
+            });
+
+        }
+
+        //обратная связь
+        $traverseInterrupted = false;
+        foreach ($nodes as $node) {
+            $traverseInterrupted |= $node->traverse(function (Node $child) use ($db) {
+                $existing = $db->searchNode($child->getId());
+                if ($existing->isDeleted()) {
+                    $child->delete();
+                }
+            });
+        }
+
+        if ($traverseInterrupted) {
             return false;
         }
 

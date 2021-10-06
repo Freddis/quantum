@@ -91,6 +91,7 @@ class Cache
         $updated = $this->database->update($this->tree->getChildren());
         if ($updated) {
 //            $this->clear();
+            $this->saveCache();
             return true;
         }
         return false;
@@ -202,7 +203,15 @@ class Cache
      */
     private function generateNodeId()
     {
-        return uniqid();
+        $id = uniqid();
+
+        //защитимся от коллизий (впрочем, если ноды в БД создаются не только нашим клиентом, то механизм надо менять)
+        $node = $this->database->getNode($id);
+        if($node)
+        {
+            return $this->generateNodeId();
+        }
+        return $id;
     }
 
 }
