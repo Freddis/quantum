@@ -13,7 +13,7 @@ class Node
     /**
      * Родитель
      */
-    protected ?self $parent = null;
+    protected $parent = null;
 
     /**
      * Значение
@@ -122,7 +122,7 @@ class Node
      *
      * @return Node|null
      */
-    public function getParent() : ?self
+    public function getParent()
     {
         return $this->parent;
     }
@@ -207,7 +207,7 @@ class Node
      * @param string $id Идентификатор нода
      * @return Node|null
      */
-    public function searchNode(string $id) : ?self
+    public function searchNode(string $id)
     {
         $result = null;
         $this->traverse(function (Node $node) use ($id, &$result) {
@@ -236,7 +236,7 @@ class Node
      * @param array $json
      * @return mixed
      */
-    public static function fromJson(array &$json) : self
+    public static function fromJson(array &$json)
     {
         $class = get_called_class();
         $deleted = isset($json["deleted"]);

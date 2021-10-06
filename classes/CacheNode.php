@@ -28,7 +28,7 @@ class CacheNode extends Node
      * @param $json
      * @return CacheNode
      */
-    public static function fromJson(&$json): self
+    public static function fromJson(&$json)
     {
         $ret = parent::fromJson($json);
         $ret->setIntendedParentId($json["parentId"]);
