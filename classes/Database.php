@@ -8,7 +8,7 @@ class Database
     /**
      * Путь к файлу с данными
      */
-    protected string $path;
+    protected $path;
 
     /**
      * Дерево данных
