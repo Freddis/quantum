@@ -19,4 +19,8 @@ if($cache->getCachedNode($id))
     $manager->error("This node is already loaded");
 }
 $data = $cache->getNode($id);
+if(!$data)
+{
+    $manager->error("Node not found");
+}
 $manager->success($data);

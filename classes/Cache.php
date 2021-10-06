@@ -6,17 +6,17 @@
 class Cache
 {
     /**
-     * @var Mixed[] Массив деревьев кеша
+     * Дерево кеша
      */
-    protected $tree = [];
+    protected CacheNode $tree;
 
     /**
-     * @var Database Подключение к безе данных
+     * Подключение к безе данных
      */
-    protected $database;
+    protected Database $database;
 
     /**
-     * @var string Путь к базе данных
+     * Путь к базе данных
      */
     protected $path;
 
@@ -29,18 +29,19 @@ class Cache
     {
         $cacheWritable = file_exists($path) && is_writable($path);
         $dirWritable = !file_exists($path) && is_writable(dirname($path));
-        if(!$cacheWritable && !$dirWritable)
-        {
+        if (!$cacheWritable && !$dirWritable) {
             throw new Exception("Файл кеша недоступен для записи");
         }
         $this->path = $path;
         $this->database = $database;
         if (!file_exists($path)) {
+            $this->tree = new CacheNode(uniqid(), "root");
             return;
         }
+
         $content = file_get_contents($path);
         $data = json_decode($content, true);
-        $this->tree = &$data;
+        $this->tree = CacheNode::fromJson($data);
     }
 
     /**
@@ -52,11 +53,11 @@ class Cache
      */
     public function renameNode(string $id, string $name)
     {
-        $node = &$this->searchCachedNode($id, $this->tree);
+        $node = $this->tree->searchNode($id);
         if (!$node) {
             return false;
         }
-        $node["value"] = $name;
+        $node->setValue($name);
         $saved = $this->saveCache();
         return $saved;
     }
@@ -69,11 +70,11 @@ class Cache
      */
     public function deleteNode(string $id)
     {
-        $node = &$this->searchCachedNode($id, $this->tree);
+        $node = $this->tree->searchNode($id);
         if (!$node) {
             return false;
         }
-        $this->deleteRecursively($node);
+        $node->delete();
         $saved = $this->saveCache();
         return $saved;
     }
@@ -85,9 +86,9 @@ class Cache
      */
     public function save()
     {
-        $updated = $this->database->update($this->tree);
+        $updated = $this->database->update($this->tree->getChildren());
         if ($updated) {
-            $this->clear();
+//            $this->clear();
             return true;
         }
         return false;
@@ -100,14 +101,15 @@ class Cache
      * @param String $name Имя ноды
      * @return bool
      */
-    public function createNode(String $parentId, String $name)
+    public function createNode(string $parentId, string $name)
     {
-        $node = &$this->searchCachedNode($parentId, $this->tree);
+        $node = $this->tree->searchNode($parentId);
         if (!$node) {
             return false;
         }
-        $row = ["id" => "_" . uniqid(), "parentId" => $parentId, "value" => $name, "children" => []];
-        $node["children"][] = $row;
+        $id = $this->generateNodeId();
+        $child = new CacheNode($id, $name);
+        $node->addChild($child);
         $saved = $this->saveCache();
         return $saved;
     }
@@ -117,18 +119,18 @@ class Cache
      *
      * @return Mixed[]
      */
-    public function getNodes()
+    public function getNodes() : array
     {
-        return $this->tree;
+        return $this->tree->childrenToArray();
     }
 
     /**
      * Получение ноды в кеш из базы данных
      *
-     * @param int $id Идентификатор ноды
+     * @param string $id Идентификатор ноды
      * @return bool
      */
-    public function getNode(int $id)
+    public function getNode(string $id)
     {
         $existing = $this->getCachedNode($id);
         if ($existing) {
@@ -136,22 +138,23 @@ class Cache
         }
 
         $node = $this->database->getNode($id);
+
         if (!$node) {
             return false;
         }
-        $children = $this->searchCachedChildNodes($id);
-        if ($children) {
-            $this->moveChildren($node, $children);
+        $node = CacheNode::fromJson($node);
+        $cachedNodes = $this->tree->getChildren();
+        foreach ($cachedNodes as $child) {
+            if ($child->getIntendedParentId() === $node->getId()) {
+                $node->addChild($child);
+            }
         }
 
-        $this->tree[] = $node;
-
-        if($node["parentId"])
-        {
-            $parent = &$this->searchCachedNode($node["parentId"],$this->tree);
-            if ($parent) {
-                $this->moveChildren($parent,[$node]);
-            }
+        $parent = $node->getIntendedParentId() ? $this->tree->searchNode($node->getIntendedParentId()) : null;
+        if ($parent) {
+            $parent->addChild($node);
+        } else {
+            $this->tree->addChild($node);
         }
 
         return $this->saveCache();
@@ -159,65 +162,21 @@ class Cache
 
     /**
      * @param string $id Идентификатор ноды
-     * @return mixed|null
+     * @return CacheNode|null
      */
-    public function getCachedNode(string $id)
+    public function getCachedNode(string $id) : ?CacheNode
     {
-        $result =  $this->searchCachedNode($id, $this->tree);
-        return $result;
-    }
-
-    /**
-     * Поиск кешированной ноды
-     *
-     * @param string $id Идентификатор ноды
-     * @param Mixed[] $nodes Ноды в которых осуществляется поиск
-     * @return mixed|null Нода
-     */
-    protected function &searchCachedNode(string $id, &$nodes)
-    {
-        foreach ($nodes as &$node) {
-            if ($node["id"] == $id) {
-                return $node;
-            }
-            $result = &$this->searchCachedNode($id, $node["children"]);
-            if ($result) {
-                return $result;
-            }
-        }
-        $result = null;
-        return $result;
-    }
-
-    /**
-     * Поиск кешированных нод-детей без родителей
-     *
-     * @param string $id идентификатор ноды
-     * @return Mixed[] Найденные ноды-дети
-     */
-    protected function searchCachedChildNodes(string $id)
-    {
-        $result = [];
-        foreach ($this->tree as $node) {
-            if ($node["parentId"] == $id) {
-                $result[] = $node;
-            }
-        }
-        return $result;
+        return $this->tree->searchNode($id);
     }
 
     /**
      * Очистка кеша
-     *
-     * @return bool
      */
     public function clear()
     {
-        if(file_exists($this->path))
-        {
+        if (file_exists($this->path)) {
             unlink($this->path);
         }
-        return true;
     }
 
     /**
@@ -227,57 +186,21 @@ class Cache
      */
     protected function saveCache()
     {
-        $data = json_encode($this->tree, JSON_PRETTY_PRINT);
+        $arr = $this->tree->toArray();
+        $data = json_encode($arr, JSON_PRETTY_PRINT);
         $write = file_put_contents($this->path, $data);
         $result = $write !== false;
         return $result;
     }
 
     /**
-     * Перемешещение детей в родителя.
+     * Генерация нового идентификатора
      *
-     * @param Mixed $parent Ссылка на родителя
-     * @param Mixed[] $children Ноды-дети
+     * @return string
      */
-    private function moveChildren(array &$parent, array $children)
+    private function generateNodeId() : string
     {
-
-        if(isset($parent["deleted"]))
-        {
-            foreach ($children as &$child)
-            {
-                $this->deleteRecursively($child);
-            }
-        }
-
-        foreach($children as $child)
-        {
-            $parent["children"][] = $child;
-        }
-        $childrenIds = [];
-        array_map(function ($el) use (&$childrenIds) {
-            $childrenIds[] = $el["id"];
-        }, $children);
-
-        //Предполагается, что безхозные дети могут быть только в корне
-        foreach ($this->tree as $key => $node) {
-            if (in_array($node["id"], $childrenIds)) {
-                unset($this->tree[$key]);
-            }
-        }
-        $this->tree = array_values($this->tree);
-    }
-
-    /**
-     * Удаление ноды
-     * @param Mixed $ref Нода, которую необходимо удалить
-     */
-    private function deleteRecursively(&$ref)
-    {
-        $ref["deleted"] = true;
-        foreach ($ref["children"] as &$child) {
-            $this->deleteRecursively($child);
-        }
+        return uniqid();
     }
 
 }

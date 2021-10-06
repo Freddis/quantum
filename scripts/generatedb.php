@@ -14,8 +14,8 @@ if (!is_integer($maxNumOfSiblings) || $maxNumOfSiblings > 1000000 || $maxNumOfSi
     die("Max number of siblings should be from 1 to 1000000 \n");
 }
 
-$nextId = 0;
-$root = ["id" => ++$nextId, "value" => "Root","children" => []];
+$nextId = 1;
+$root = ["id" => uniqid(), "value" => "Root","children" => []];
 
 $fill =  function (&$container, $level) use($maxNumOfSiblings,&$nextId, &$fill)
 {
@@ -24,7 +24,8 @@ $fill =  function (&$container, $level) use($maxNumOfSiblings,&$nextId, &$fill)
     $level--;
     for($i=0; $i < $numOfSiblings;$i++)
     {
-        $row = ["id" => ++$nextId, "value" => "Node".$nextId, "children" => []];
+        ++$nextId;
+        $row = ["id" => uniqid(), "value" => "Node".$nextId, "children" => []];
         $container[] = $row;
         $skip = ($i != 0 && (rand(0,100) < 20 )) ? true : false;
         if($level > 0 && !$skip)
